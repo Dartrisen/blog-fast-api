@@ -21,3 +21,15 @@ SECRET_KEY = "557194d75e3f6ac06f08816bc59f0f62e1093542bb9104d229baeda94e7c6ba7"
 ALGORITHM = "HS256"
 
 oauth2_bearer = OAuth2PasswordBearer(tokenUrl="auth/token")
+
+
+class CreateUserRequest(BaseModel):
+    username: str
+    email: str
+    password: str
+    is_superuser: bool
+
+
+class Token(BaseModel):
+    access_token: str
+    token_type: str
