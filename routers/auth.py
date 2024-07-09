@@ -58,3 +58,12 @@ def verify_password(plain_password: str, hashed_password: str) -> bool:
     if isinstance(hashed_password, str):
         hashed_password = hashed_password.encode("utf-8")
     return bcrypt.checkpw(password=pwd_bytes, hashed_password=hashed_password)
+
+
+def authenticate_user(username: str, password: str, db):
+    user = db.query(User).filter(User.username == username).first()
+    if not user:
+        return False
+    if not verify_password(password, user.hashed_password):
+        return False
+    return user
