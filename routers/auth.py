@@ -67,3 +67,10 @@ def authenticate_user(username: str, password: str, db):
     if not verify_password(password, user.hashed_password):
         return False
     return user
+
+
+def create_access_token(username: str, user_id: int, is_superuser: bool, expires_delta: timedelta):
+    encode = {"sub": username, "id": user_id, "is_superuser": is_superuser}
+    expires = datetime.now(timezone.utc) + expires_delta
+    encode.update({"exp": expires})
+    return jwt.encode(encode, SECRET_KEY, algorithm=ALGORITHM)
