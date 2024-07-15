@@ -87,3 +87,17 @@ async def get_current_user(token: Annotated[str, Depends(oauth2_bearer)]):
         return {"username": username, "id": user_id, "is_superuser": is_superuser}
     except JWTError:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Could not validate user")
+
+
+@router.post("/", status_code=status.HTTP_201_CREATED)
+async def create_user(db: db_dependency, create_user_request: CreateUserRequest):
+    create_user_model = User(
+        username=create_user_request.username,
+        email=create_user_request.email,
+        is_superuser=create_user_request.is_superuser,
+        hashed_password=get_password_hash(create_user_request.password),
+        is_active=True,
+    )
+
+    db.add(create_user_model)
+    db.commit()
