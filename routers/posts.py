@@ -47,3 +47,22 @@ async def get_posts(user: user_dependency, db: db_dependency, limit: int = 10, s
 
     posts = query.offset(skip).limit(limit).all()
     return posts
+
+
+@router.post("/post/", status_code=status.HTTP_201_CREATED)
+async def create_post(create_post_request: CreatePostRequest, user: user_dependency, db: db_dependency):
+    if user is None:
+        raise HTTPException(status_code=401, detail="Authentication Failed")
+
+    db_post = Post(
+        title=create_post_request.title,
+        content=create_post_request.content,
+        published=create_post_request.published,
+        owner_id=user.get("id")
+    )
+
+    db.add(db_post)
+    db.commit()
+    db.refresh(db_post)
+
+    return db_post
