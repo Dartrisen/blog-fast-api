@@ -1,7 +1,6 @@
 from typing import Annotated, Optional
 
 from fastapi import APIRouter, Depends, HTTPException
-from passlib.context import CryptContext
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
 from starlette import status
@@ -26,13 +25,23 @@ def get_db():
 
 db_dependency = Annotated[Session, Depends(get_db)]
 user_dependency = Annotated[dict, Depends(get_current_user)]
-bcrypt_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 
 class CreatePostRequest(BaseModel):
     title: str
     content: str
     published: Optional[bool] = True
+
+
+class PostResponse(BaseModel):
+    id: int
+    title: str
+    content: str
+    published: bool
+    owner_id: int
+
+    class Config:
+        from_attributes = True
 
 
 @router.get("/", status_code=status.HTTP_200_OK)
@@ -47,6 +56,19 @@ async def get_posts(user: user_dependency, db: db_dependency, limit: int = 10, s
 
     posts = query.offset(skip).limit(limit).all()
     return posts
+
+
+@router.get("/{post_id}", status_code=status.HTTP_200_OK, response_model=PostResponse)
+async def get_post(post_id: int, user: user_dependency, db: db_dependency):
+    if user is None:
+        raise HTTPException(status_code=401, detail="Authentication Failed")
+
+    db_post = db.query(Post).filter(Post.id == post_id, Post.owner_id == user.get("id")).first()
+
+    if db_post is None:
+        raise HTTPException(status_code=404, detail="Post not found")
+
+    return db_post
 
 
 @router.post("/post/", status_code=status.HTTP_201_CREATED)
