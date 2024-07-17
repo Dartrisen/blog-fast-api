@@ -44,6 +44,12 @@ class PostResponse(BaseModel):
         from_attributes = True
 
 
+class PostUpdate(BaseModel):
+    title: Optional[str]
+    content: Optional[str]
+    published: Optional[bool]
+
+
 @router.get("/", status_code=status.HTTP_200_OK)
 async def get_posts(user: user_dependency, db: db_dependency, limit: int = 10, skip: int = 0, search: Optional[str] = ""):
     if user is None:
@@ -58,7 +64,7 @@ async def get_posts(user: user_dependency, db: db_dependency, limit: int = 10, s
     return posts
 
 
-@router.get("/{post_id}", status_code=status.HTTP_200_OK, response_model=PostResponse)
+@router.get("/{post_id}", response_model=PostResponse, status_code=status.HTTP_200_OK)
 async def get_post(post_id: int, user: user_dependency, db: db_dependency):
     if user is None:
         raise HTTPException(status_code=401, detail="Authentication Failed")
@@ -88,3 +94,23 @@ async def create_post(create_post_request: CreatePostRequest, user: user_depende
     db.refresh(db_post)
 
     return db_post
+
+
+@router.put("/{post_id}", status_code=status.HTTP_204_NO_CONTENT)
+async def update_post(post_id: int, post: PostUpdate, user: user_dependency, db: db_dependency):
+    if user is None:
+        raise HTTPException(status_code=401, detail="Authentication Failed")
+
+    db_post = db.query(Post).filter(Post.id == post_id, Post.owner_id == user.get("id")).first()
+    if db_post is None:
+        raise HTTPException(status_code=404, detail="Post not found")
+
+    if post.title is not None:
+        db_post.title = post.title
+    if post.content is not None:
+        db_post.content = post.content
+    if post.published is not None:
+        db_post.published = post.published
+
+    db.commit()
+    db.refresh(db_post)
