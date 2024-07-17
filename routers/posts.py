@@ -1,7 +1,7 @@
 from typing import Annotated, Optional
 
 from fastapi import APIRouter, Depends, HTTPException
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from sqlalchemy.orm import Session
 from starlette import status
 
@@ -28,8 +28,8 @@ user_dependency = Annotated[dict, Depends(get_current_user)]
 
 
 class CreatePostRequest(BaseModel):
-    title: str
-    content: str
+    title: str = Field(min_length=1, max_length=50)
+    content: str = Field(min_length=1, max_length=5000)
     published: Optional[bool] = True
 
 
@@ -44,13 +44,13 @@ class PostResponse(BaseModel):
         from_attributes = True
 
 
-class PostUpdate(BaseModel):
-    title: Optional[str]
-    content: Optional[str]
-    published: Optional[bool]
+class UpdatePostRequest(BaseModel):
+    title: Optional[str] = Field(min_length=1, max_length=50)
+    content: Optional[str] = Field(min_length=1, max_length=5000)
+    published: Optional[bool] = True
 
 
-@router.get("/", status_code=status.HTTP_200_OK)
+@router.get("/", response_model=list[PostResponse], status_code=status.HTTP_200_OK)
 async def get_posts(user: user_dependency, db: db_dependency, limit: int = 10, skip: int = 0, search: Optional[str] = ""):
     if user is None:
         raise HTTPException(status_code=401, detail="Authentication Failed")
@@ -69,15 +69,14 @@ async def get_post(post_id: int, user: user_dependency, db: db_dependency):
     if user is None:
         raise HTTPException(status_code=401, detail="Authentication Failed")
 
-    db_post = db.query(Post).filter(Post.id == post_id, Post.owner_id == user.get("id")).first()
+    post_model = db.query(Post).filter(Post.id == post_id, Post.owner_id == user.get("id")).first()
 
-    if db_post is None:
-        raise HTTPException(status_code=404, detail="Post not found")
+    if post_model is not None:
+        return post_model
+    raise HTTPException(status_code=404, detail="Post not found")
 
-    return db_post
 
-
-@router.post("/post/", status_code=status.HTTP_201_CREATED)
+@router.post("/post/", response_model=PostResponse, status_code=status.HTTP_201_CREATED)
 async def create_post(create_post_request: CreatePostRequest, user: user_dependency, db: db_dependency):
     if user is None:
         raise HTTPException(status_code=401, detail="Authentication Failed")
@@ -97,7 +96,7 @@ async def create_post(create_post_request: CreatePostRequest, user: user_depende
 
 
 @router.put("/{post_id}", status_code=status.HTTP_204_NO_CONTENT)
-async def update_post(post_id: int, post: PostUpdate, user: user_dependency, db: db_dependency):
+async def update_post(post_id: int, post: UpdatePostRequest, user: user_dependency, db: db_dependency):
     if user is None:
         raise HTTPException(status_code=401, detail="Authentication Failed")
 
@@ -105,12 +104,9 @@ async def update_post(post_id: int, post: PostUpdate, user: user_dependency, db:
     if db_post is None:
         raise HTTPException(status_code=404, detail="Post not found")
 
-    if post.title is not None:
-        db_post.title = post.title
-    if post.content is not None:
-        db_post.content = post.content
-    if post.published is not None:
-        db_post.published = post.published
+    db_post.title = post.title
+    db_post.content = post.content
+    db_post.published = post.published
 
     db.commit()
     db.refresh(db_post)
