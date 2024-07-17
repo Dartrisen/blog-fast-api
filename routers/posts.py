@@ -27,27 +27,22 @@ db_dependency = Annotated[Session, Depends(get_db)]
 user_dependency = Annotated[dict, Depends(get_current_user)]
 
 
-class CreatePostRequest(BaseModel):
+class BasePostRequest(BaseModel):
     title: str = Field(min_length=1, max_length=50)
     content: str = Field(min_length=1, max_length=5000)
     published: Optional[bool] = True
 
 
-class PostResponse(BaseModel):
+class PostResponse(BasePostRequest):
     id: int
-    title: str
-    content: str
-    published: bool
     owner_id: int
 
     class Config:
         from_attributes = True
 
 
-class UpdatePostRequest(BaseModel):
-    title: Optional[str] = Field(min_length=1, max_length=50)
-    content: Optional[str] = Field(min_length=1, max_length=5000)
-    published: Optional[bool] = True
+class UpdatePostRequest(BasePostRequest):
+    ...
 
 
 @router.get("/", response_model=list[PostResponse], status_code=status.HTTP_200_OK)
@@ -77,7 +72,7 @@ async def get_post(post_id: int, user: user_dependency, db: db_dependency):
 
 
 @router.post("/post/", response_model=PostResponse, status_code=status.HTTP_201_CREATED)
-async def create_post(create_post_request: CreatePostRequest, user: user_dependency, db: db_dependency):
+async def create_post(create_post_request: BasePostRequest, user: user_dependency, db: db_dependency):
     if user is None:
         raise HTTPException(status_code=401, detail="Authentication Failed")
 
