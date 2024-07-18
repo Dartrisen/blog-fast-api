@@ -71,7 +71,7 @@ async def get_post(post_id: int, user: user_dependency, db: db_dependency):
     raise HTTPException(status_code=404, detail="Post not found")
 
 
-@router.post("/post/", response_model=PostResponse, status_code=status.HTTP_201_CREATED)
+@router.post("/create_post", response_model=PostResponse, status_code=status.HTTP_201_CREATED)
 async def create_post(create_post_request: BasePostRequest, user: user_dependency, db: db_dependency):
     if user is None:
         raise HTTPException(status_code=401, detail="Authentication Failed")
