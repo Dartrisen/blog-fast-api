@@ -71,3 +71,21 @@ async def get_comment(comment_id: int, user: user_dependency, db: Session = Depe
         raise HTTPException(status_code=404, detail="Comment not found")
 
     return db_comment
+
+
+@router.post("/create_comment", response_model=CommentResponse, status_code=status.HTTP_201_CREATED)
+async def create_comment(comment: CommentCreate, post: post_dependency, user: user_dependency, db: db_dependency):
+    if user is None:
+        raise HTTPException(status_code=401, detail="Authentication Failed")
+
+    db_comment = Comment(
+        content=comment.content,
+        post_id=post.id,
+        author_id=user.get("id")
+    )
+
+    db.add(db_comment)
+    db.commit()
+    db.refresh(db_comment)
+
+    return db_comment
