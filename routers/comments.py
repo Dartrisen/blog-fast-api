@@ -59,3 +59,15 @@ async def get_comments(post_id: int, user: user_dependency, db: db_dependency, l
 
     comments = db.query(Comment).filter(Comment.post_id == post_id).offset(skip).limit(limit).all()
     return comments
+
+
+@router.get("/{comment_id}", response_model=CommentResponse, status_code=status.HTTP_200_OK)
+async def get_comment(comment_id: int, user: user_dependency, db: Session = Depends(get_db)):
+    if user is None:
+        raise HTTPException(status_code=401, detail="Authentication Failed")
+
+    db_comment = db.query(Comment).filter(Comment.id == comment_id).first()
+    if db_comment is None:
+        raise HTTPException(status_code=404, detail="Comment not found")
+
+    return db_comment
