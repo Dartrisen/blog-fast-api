@@ -30,7 +30,7 @@ post_dependency = Annotated[dict, Depends(get_post)]
 
 
 class CommentCreate(BaseModel):
-    content: str
+    content: str = Field(min_length=1, max_length=300)
     # post_id: int = Field(gt=0)
 
 
@@ -39,10 +39,10 @@ class CommentUpdate(BaseModel):
 
 
 class CommentResponse(BaseModel):
-    id: int
-    content: str
-    post_id: int
-    author_id: int
+    id: int = Field(gt=0)
+    content: str = Field(min_length=1, max_length=300)
+    post_id: int = Field(gt=0)
+    author_id: int = Field(gt=0)
 
     class Config:
         from_attributes = True
@@ -62,7 +62,7 @@ async def get_comments(post_id: int, user: user_dependency, db: db_dependency, l
 
 
 @router.get("/{comment_id}", response_model=CommentResponse, status_code=status.HTTP_200_OK)
-async def get_comment(comment_id: int, user: user_dependency, db: Session = Depends(get_db)):
+async def get_comment(comment_id: int, user: user_dependency, db: db_dependency):
     if user is None:
         raise HTTPException(status_code=401, detail="Authentication Failed")
 
