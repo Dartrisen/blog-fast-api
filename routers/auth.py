@@ -5,7 +5,7 @@ import bcrypt
 from fastapi import APIRouter, Depends, HTTPException
 from fastapi.security import OAuth2PasswordRequestForm, OAuth2PasswordBearer
 from jose import jwt, JWTError
-from pydantic import BaseModel
+from pydantic import BaseModel, EmailStr, Field
 from sqlalchemy.orm import Session
 from starlette import status
 
@@ -25,9 +25,9 @@ oauth2_bearer = OAuth2PasswordBearer(tokenUrl="auth/token")
 
 class CreateUserRequest(BaseModel):
     username: str
-    email: str
+    email: EmailStr
     password: str
-    is_superuser: bool
+    is_superuser: bool = Field(default=False)
 
 
 class Token(BaseModel):
@@ -94,13 +94,14 @@ async def create_user(db: db_dependency, create_user_request: CreateUserRequest)
     create_user_model = User(
         username=create_user_request.username,
         email=create_user_request.email,
-        is_superuser=create_user_request.is_superuser,
+        is_superuser=False,
         hashed_password=get_password_hash(create_user_request.password),
         is_active=True,
     )
 
     db.add(create_user_model)
     db.commit()
+    db.refresh(create_user_model)
 
 
 @router.post("/token", response_model=Token)
