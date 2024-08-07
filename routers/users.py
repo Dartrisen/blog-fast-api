@@ -52,3 +52,13 @@ async def change_password(user: user_dependency, db: db_dependency, user_verific
     user_model.hashed_password = bcrypt_context.hash(user_verification.new_password)
     db.add(user_model)
     db.commit()
+
+
+@router.put("/email/{email}", status_code=status.HTTP_204_NO_CONTENT)
+async def change_email(user: user_dependency, db: db_dependency, email: str):
+    if user is None:
+        raise HTTPException(status_code=401, detail="Authentication Failed")
+    user_model = db.query(User).filter(User.id == user.get("id")).first()
+    user_model.email = email
+    db.add(user_model)
+    db.commit()
