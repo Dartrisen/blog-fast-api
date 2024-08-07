@@ -95,6 +95,10 @@ async def create_user(db: db_dependency, create_user_request: CreateUserRequest)
     if user_model:
         raise HTTPException(status_code=400, detail="Username already registered")
 
+    user_model = db.query(User).filter(User.email == create_user_request.email).first()
+    if user_model:
+        raise HTTPException(status_code=400, detail="Email already registered")
+
     create_user_model = User(
         username=create_user_request.username,
         email=create_user_request.email,
