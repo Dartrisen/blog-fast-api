@@ -1,7 +1,6 @@
-from typing import Annotated, Optional
+from typing import Annotated
 
 from fastapi import APIRouter, Depends, HTTPException
-from pydantic import BaseModel, Field
 from sqlalchemy.orm import Session
 from starlette import status
 
@@ -9,6 +8,7 @@ from database import SessionLocal
 from models import Post, Comment
 from routers.auth import get_current_user
 from routers.posts import get_post
+from .schemas import CommentCreate, CommentUpdate, CommentResponse
 
 router = APIRouter(
     prefix="/comments",
@@ -27,25 +27,6 @@ def get_db():
 db_dependency = Annotated[Session, Depends(get_db)]
 user_dependency = Annotated[dict, Depends(get_current_user)]
 post_dependency = Annotated[dict, Depends(get_post)]
-
-
-class CommentCreate(BaseModel):
-    content: str = Field(min_length=1, max_length=300)
-    # post_id: int = Field(gt=0)
-
-
-class CommentUpdate(BaseModel):
-    content: Optional[str]
-
-
-class CommentResponse(BaseModel):
-    id: int = Field(gt=0)
-    content: str = Field(min_length=1, max_length=300)
-    post_id: int = Field(gt=0)
-    author_id: int = Field(gt=0)
-
-    class Config:
-        from_attributes = True
 
 
 @router.get("/", response_model=list[CommentResponse], status_code=status.HTTP_200_OK)
