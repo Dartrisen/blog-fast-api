@@ -1,5 +1,6 @@
-from pydantic import BaseModel, EmailStr, Field
 from typing import Optional
+
+from pydantic import BaseModel, EmailStr, Field
 
 
 class CreateSuperUserRequest(BaseModel):
@@ -37,3 +38,21 @@ class CommentResponse(BaseModel):
 
     class Config:
         from_attributes = True
+
+
+class PostRequest(BaseModel):
+    title: str = Field(min_length=1, max_length=50)
+    content: str = Field(min_length=1, max_length=5000)
+    published: Optional[bool] = True
+
+
+class PostResponse(PostRequest):
+    id: int
+    owner_id: int
+
+    class Config:
+        from_attributes = True
+
+
+class UpdatePostRequest(PostRequest):
+    ...

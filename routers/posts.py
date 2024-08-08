@@ -1,13 +1,13 @@
 from typing import Annotated, Optional
 
 from fastapi import APIRouter, Depends, HTTPException
-from pydantic import BaseModel, Field
 from sqlalchemy.orm import Session
 from starlette import status
 
 from database import SessionLocal
 from models import Post
 from routers.auth import get_current_user
+from .schemas import PostRequest, PostResponse, UpdatePostRequest
 
 router = APIRouter(
     prefix="/posts",
@@ -25,24 +25,6 @@ def get_db():
 
 db_dependency = Annotated[Session, Depends(get_db)]
 user_dependency = Annotated[dict, Depends(get_current_user)]
-
-
-class BasePostRequest(BaseModel):
-    title: str = Field(min_length=1, max_length=50)
-    content: str = Field(min_length=1, max_length=5000)
-    published: Optional[bool] = True
-
-
-class PostResponse(BasePostRequest):
-    id: int
-    owner_id: int
-
-    class Config:
-        from_attributes = True
-
-
-class UpdatePostRequest(BasePostRequest):
-    ...
 
 
 @router.get("/", response_model=list[PostResponse], status_code=status.HTTP_200_OK)
@@ -72,7 +54,7 @@ async def get_post(post_id: int, user: user_dependency, db: db_dependency):
 
 
 @router.post("/create_post", response_model=PostResponse, status_code=status.HTTP_201_CREATED)
-async def create_post(create_post_request: BasePostRequest, user: user_dependency, db: db_dependency):
+async def create_post(create_post_request: PostRequest, user: user_dependency, db: db_dependency):
     if user is None:
         raise HTTPException(status_code=401, detail="Authentication Failed")
 
@@ -118,5 +100,6 @@ async def delete_post(post_id: int, user: user_dependency, db: db_dependency):
 
     db.delete(db_post)
     db.commit()
+    db.refresh(db_post)
 
     return db_post
