@@ -4,23 +4,15 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from starlette import status
 
-from .auth import get_current_user, get_password_hash
 from database import SessionLocal
-
-from pydantic import BaseModel, EmailStr, Field
 from models import User
+from .auth import get_current_user, get_password_hash
+from .schemas import CreateSuperUserRequest
 
 router = APIRouter(
     prefix="/admin",
     tags=["admin"]
 )
-
-
-class CreateSuperUserRequest(BaseModel):
-    username: str
-    email: EmailStr
-    password: str
-    is_superuser: bool = Field(True)
 
 
 def get_db():
@@ -37,10 +29,7 @@ user_dependency = Annotated[dict, Depends(get_current_user)]
 
 def get_current_superuser(user: user_dependency):
     if not user.get("is_superuser"):
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="The user doesn't have enough privileges"
-        )
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="The user doesn't have enough privileges")
     return user
 
 
