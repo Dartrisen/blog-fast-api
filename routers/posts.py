@@ -101,5 +101,3 @@ async def delete_post(post_id: int, user: user_dependency, db: db_dependency):
     db.delete(db_post)
     db.commit()
     db.refresh(db_post)
-
-    return db_post
