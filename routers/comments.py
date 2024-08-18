@@ -70,3 +70,18 @@ async def create_comment(comment: CommentCreate, post: post_dependency, user: us
     db.refresh(db_comment)
 
     return db_comment
+
+
+@router.put("/update_comment", status_code=status.HTTP_204_NO_CONTENT)
+async def update_comment(comment_id: int, comment: CommentUpdate, user: user_dependency, db: db_dependency):
+    if user is None:
+        raise HTTPException(status_code=401, detail="Authentication Failed")
+
+    db_comment = db.query(Comment).filter(Comment.id == comment_id, Comment.author_id == user.get("id")).first()
+    if db_comment is None:
+        raise HTTPException(status_code=404, detail="Comment not found")
+
+    db_comment.content = comment.content
+
+    db.commit()
+    db.refresh(db_comment)
