@@ -53,3 +53,18 @@ def test_create_post(test_post):
     model = db.query(Post).filter(Post.id == 2).first()
     for key, value in request_data.items():
         assert getattr(model, key) == value
+
+
+def test_update_post(test_post):
+    request_data = {
+        "content": "Locked in...",
+        "title": "Test Title number 3",
+        "published": True,
+    }
+
+    response = client.put("/posts/1", json=request_data)
+    assert response.status_code == 204
+    db = TestingSessionLocal()
+    model = db.query(Post).filter(Post.id == 1).first()
+    for key, value in request_data.items():
+        assert getattr(model, key) == value
