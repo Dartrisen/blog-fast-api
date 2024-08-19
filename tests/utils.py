@@ -34,6 +34,10 @@ def override_get_current_user():
     return {"username": "dartrisen", "id": 1, "is_superuser": True}
 
 
+def override_get_current_non_superuser():
+    return {"username": "dartrisen", "id": 1, "is_superuser": False}
+
+
 client = TestClient(app)
 
 
@@ -49,6 +53,7 @@ def test_post():
     db = TestingSessionLocal()
     db.add(post)
     db.commit()
+    db.refresh(post)
     yield post
     with engine.connect() as connection:
         connection.execute(text("DELETE FROM posts;"))
@@ -66,6 +71,7 @@ def test_user():
     db = TestingSessionLocal()
     db.add(user)
     db.commit()
+    db.refresh(user)
     yield user
     with engine.connect() as connection:
         connection.execute(text("DELETE FROM users;"))
