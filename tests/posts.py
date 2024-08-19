@@ -68,3 +68,15 @@ def test_update_post(test_post):
     model = db.query(Post).filter(Post.id == 1).first()
     for key, value in request_data.items():
         assert getattr(model, key) == value
+
+
+def test_update_post_not_found(test_post):
+    request_data = {
+        "content": "Locked in...",
+        "title": "Test Title number 3",
+        "published": True,
+    }
+
+    response = client.put("/posts/99", json=request_data)
+    assert response.status_code == 404
+    assert response.json() == {"detail": "Post not found"}
