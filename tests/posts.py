@@ -29,3 +29,9 @@ def test_get_post(test_post):
         "owner_id": 1,
         "published": True,
     }
+
+
+def test_get_post_not_found(test_post):
+    response = client.get("/posts/99")
+    assert response.status_code == 404
+    assert response.json() == {"detail": "Post not found"}
