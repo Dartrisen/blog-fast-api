@@ -80,3 +80,11 @@ def test_update_post_not_found(test_post):
     response = client.put("/posts/99", json=request_data)
     assert response.status_code == 404
     assert response.json() == {"detail": "Post not found"}
+
+
+def test_delete_post(test_post):
+    response = client.delete("/posts/1")
+    assert response.status_code == 204
+    db = TestingSessionLocal()
+    model = db.query(Post).filter(Post.id == 1).first()
+    assert model is None
