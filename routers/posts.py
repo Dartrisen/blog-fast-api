@@ -7,7 +7,7 @@ from starlette import status
 from database import SessionLocal
 from models import Post
 from routers.auth import get_current_user
-from .schemas import PostRequest, PostResponse, UpdatePostRequest
+from schemas import PostRequest, PostResponse, UpdatePostRequest
 
 router = APIRouter(
     prefix="/posts",

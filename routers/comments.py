@@ -8,7 +8,7 @@ from database import SessionLocal
 from models import Post, Comment
 from routers.auth import get_current_user
 from routers.posts import get_post
-from .schemas import CommentCreate, CommentUpdate, CommentResponse
+from schemas import CommentCreate, CommentUpdate, CommentResponse
 
 router = APIRouter(
     prefix="/comments",

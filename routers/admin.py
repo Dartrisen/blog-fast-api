@@ -7,7 +7,7 @@ from starlette import status
 from database import SessionLocal
 from models import User
 from .auth import get_current_user, get_password_hash
-from .schemas import CreateSuperUserRequest
+from schemas import CreateSuperUserRequest
 
 router = APIRouter(
     prefix="/admin",

@@ -10,7 +10,7 @@ from starlette import status
 
 from database import SessionLocal
 from models import User
-from .schemas import CreateUserRequest, Token
+from schemas import CreateUserRequest, Token
 
 router = APIRouter(
     prefix="/auth",
