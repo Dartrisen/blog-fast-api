@@ -14,7 +14,7 @@ class EntityBase:
 class User(Base, EntityBase):
     __tablename__ = "users"
 
-    username = Column(String, unique=True, index=True, nullable=False)
+    username = Column(String(50), unique=True, index=True, nullable=False)
     email = Column(String, unique=True, index=True, nullable=False)
     hashed_password = Column(String, nullable=False)
     is_active = Column(Boolean, default=True)
@@ -27,7 +27,7 @@ class User(Base, EntityBase):
 class Post(Base, EntityBase):
     __tablename__ = "posts"
 
-    title = Column(String, index=True, nullable=False)
+    title = Column(String(50), index=True, nullable=False)
     content = Column(Text, nullable=False)
     published = Column(Boolean, default=True)
     owner_id = Column(Integer, ForeignKey("users.id"))
