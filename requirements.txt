@@ -9,3 +9,5 @@ alembic~=1.13.1
 aiofiles~=23.2.1
 python-jose~=3.3.0
 pytest-asyncio~=0.23.8
+pytest-cov~=5.0.0
+coverage~=7.6.1
