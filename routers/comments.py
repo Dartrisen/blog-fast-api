@@ -85,3 +85,16 @@ async def update_comment(comment_id: int, comment: CommentUpdate, user: user_dep
 
     db.commit()
     db.refresh(db_comment)
+
+
+@router.delete("/delete_comment", status_code=status.HTTP_204_NO_CONTENT)
+async def delete_comment(comment_id: int, user: user_dependency, db: db_dependency):
+    if user is None:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Authentication Failed")
+
+    db_comment = db.query(Comment).filter(Comment.id == comment_id, Comment.author_id == user.get("id")).first()
+    if db_comment is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Comment not found")
+
+    db.delete(db_comment)
+    db.commit()
