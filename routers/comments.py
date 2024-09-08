@@ -32,11 +32,11 @@ post_dependency = Annotated[dict, Depends(get_post)]
 @router.get("/", response_model=list[CommentResponse], status_code=status.HTTP_200_OK)
 async def get_comments(post_id: int, user: user_dependency, db: db_dependency, limit: int = 10, skip: int = 0):
     if user is None:
-        raise HTTPException(status_code=401, detail="Authentication Failed")
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Authentication Failed")
 
     db_post = db.query(Post).filter(Post.id == post_id).first()
     if db_post is None:
-        raise HTTPException(status_code=404, detail="Post not found")
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Post not found")
 
     comments = db.query(Comment).filter(Comment.post_id == post_id).offset(skip).limit(limit).all()
     return comments
@@ -45,11 +45,11 @@ async def get_comments(post_id: int, user: user_dependency, db: db_dependency, l
 @router.get("/{comment_id}", response_model=CommentResponse, status_code=status.HTTP_200_OK)
 async def get_comment(comment_id: int, user: user_dependency, db: db_dependency):
     if user is None:
-        raise HTTPException(status_code=401, detail="Authentication Failed")
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Authentication Failed")
 
     db_comment = db.query(Comment).filter(Comment.id == comment_id).first()
     if db_comment is None:
-        raise HTTPException(status_code=404, detail="Comment not found")
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Comment not found")
 
     return db_comment
 
@@ -57,7 +57,7 @@ async def get_comment(comment_id: int, user: user_dependency, db: db_dependency)
 @router.post("/create_comment", response_model=CommentResponse, status_code=status.HTTP_201_CREATED)
 async def create_comment(comment: CommentCreate, post: post_dependency, user: user_dependency, db: db_dependency):
     if user is None:
-        raise HTTPException(status_code=401, detail="Authentication Failed")
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Authentication Failed")
 
     db_comment = Comment(
         content=comment.content,
@@ -75,11 +75,11 @@ async def create_comment(comment: CommentCreate, post: post_dependency, user: us
 @router.put("/update_comment/{comment_id}", status_code=status.HTTP_204_NO_CONTENT)
 async def update_comment(comment_id: int, comment: CommentUpdate, user: user_dependency, db: db_dependency):
     if user is None:
-        raise HTTPException(status_code=401, detail="Authentication Failed")
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Authentication Failed")
 
     db_comment = db.query(Comment).filter(Comment.id == comment_id, Comment.author_id == user.get("id")).first()
     if db_comment is None:
-        raise HTTPException(status_code=404, detail="Comment not found")
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Comment not found")
 
     db_comment.content = comment.content
 
