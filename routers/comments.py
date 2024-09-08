@@ -72,7 +72,7 @@ async def create_comment(comment: CommentCreate, post: post_dependency, user: us
     return db_comment
 
 
-@router.put("/update_comment", status_code=status.HTTP_204_NO_CONTENT)
+@router.put("/update_comment/{comment_id}", status_code=status.HTTP_204_NO_CONTENT)
 async def update_comment(comment_id: int, comment: CommentUpdate, user: user_dependency, db: db_dependency):
     if user is None:
         raise HTTPException(status_code=401, detail="Authentication Failed")
@@ -87,7 +87,7 @@ async def update_comment(comment_id: int, comment: CommentUpdate, user: user_dep
     db.refresh(db_comment)
 
 
-@router.delete("/delete_comment", status_code=status.HTTP_204_NO_CONTENT)
+@router.delete("/delete_comment/{comment_id}", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_comment(comment_id: int, user: user_dependency, db: db_dependency):
     if user is None:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Authentication Failed")
