@@ -1,4 +1,4 @@
-name: Run Python Tests and Coverage
+name: Checks
 
 on:
   push:

@@ -1,3 +1,6 @@
+"""
+Admins router.
+"""
 from typing import Annotated
 
 from fastapi import APIRouter, Depends, HTTPException
@@ -16,6 +19,10 @@ router = APIRouter(
 
 
 def get_db():
+    """Dependency that provides a database session.
+
+    :return: A generator that yields a database session.
+    """
     db = SessionLocal()
     try:
         yield db
@@ -28,6 +35,14 @@ user_dependency = Annotated[dict, Depends(get_current_user)]
 
 
 def get_current_superuser(user: user_dependency):
+    """Ensure the current user is a superuser.
+
+    :param user: The current authenticated user.
+
+    :raises HTTPException: If the user does not have superuser privileges.
+
+    :return: The current user if they are a superuser.
+    """
     if not user.get("is_superuser"):
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="The user doesn't have enough privileges")
     return user
@@ -39,6 +54,16 @@ async def create_superuser(
         db: db_dependency,
         current_user: User = Depends(get_current_superuser)
 ):
+    """Create a new superuser.
+
+    :param create_superuser_request: The request object containing the new superuser's details.
+    :param db: The database session.
+    :param current_user: The current authenticated superuser.
+
+    :raises HTTPException: If the current user is not a superuser or if an attempt is made to create an admin user by a non-admin.
+
+    :return: None
+    """
     if create_superuser_request.is_superuser == True and not current_user.get("is_superuser"):
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Only admins can create admin users.")
 
