@@ -8,6 +8,7 @@ app.dependency_overrides[get_current_user] = override_get_current_user
 
 
 def test_return_user(test_user):
+    """Test retrieving the current user's information."""
     response = client.get("/user")
     assert response.status_code == status.HTTP_200_OK
     result = response.json()
@@ -23,6 +24,7 @@ def test_return_user(test_user):
 
 
 def test_change_password_success(test_user):
+    """Test successfully changing the user's password."""
     response = client.put("/user/password", json={
         "password": "testpassword",
         "new_password": "newpassword"
@@ -31,6 +33,7 @@ def test_change_password_success(test_user):
 
 
 def test_change_password_invalid_current_password(test_user):
+    """Test changing the user's password with an invalid current password."""
     response = client.put("/user/password", json={
         "password": "wrongpassword",
         "new_password": "newpassword"
@@ -40,5 +43,6 @@ def test_change_password_invalid_current_password(test_user):
 
 
 def test_change_email_success(test_user):
+    """Test successfully changing the user's email address."""
     response = client.put("/user/email/test@test.com")
     assert response.status_code == status.HTTP_204_NO_CONTENT
